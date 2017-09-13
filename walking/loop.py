@@ -99,24 +99,10 @@ def main():
    #plot CoM and CoP
    plt.plot(cop[0, :], cop[1, :], 'g')
    plt.plot(st[:, 0], st[:, 3], 'b')
-
-   #plot time evolution of CoP coords and its constraints
-   fig1, ax1 = plt.subplots(1)
-   plt.title('CoP and its constraints')
-   ax1.set_ylabel('CoP coords [m]')
-   ax1.set_xlabel('time [s]')
-   plt.axis('equal')
-   plt.plot(tms,  st[:, 3], 'm')
-   plt.plot(tms, cop[0, :], 'r+')
-   plt.plot(tms, cop[1, :], 'm+')
-   plt.plot(tm, cstr[:, 0], 'go')
-   plt.plot(tm, cstr[:, 1], 'bo')
-   plt.plot(tm, cstr[:, 2], 'go')
-   plt.plot(tm, cstr[:, 3], 'bo')
    
    #plot time evolution of feet trajectory coords
    fig2, ax2 = plt.subplots(1)
-   plt.title('feet vs. com acceleration')
+   plt.title('feet and CoM acceleration')
    ax2.set_ylabel('accel [m/s^2]')
    ax2.set_xlabel('time [s]')
    plt.axis('equal')
