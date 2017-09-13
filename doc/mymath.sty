@@ -1,0 +1,183 @@
+\ProvidesPackage{mymath}[]
+
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{ifthen}
+
+
+
+% bold matrices and vectors (deprecated, compatibility)
+\newcommand{\mbm}[1]{\boldsymbol{#1}}
+
+\newcommand{\ubar}[1]{\underline{#1}}
+%\newcommand{\ubar}[1]{\underset{\bar{}}{#1}}
+
+% set
+\newcommand{\SET}[1]{\mathcal{#1}}
+% frame
+\newcommand{\FRAME}[1]{\mathsf{#1}}
+% function
+\newcommand{\FUNC}[1]{\mbox{#1}}
+
+% new vector/matrix notation 
+\newcommand{\VEC}[1]{\bm{#1}}
+\newcommand{\MAT}[1]{\bm{#1}}
+
+% vector
+\newcommand{\V}[2][{}]{
+    \ifthenelse{\equal{#1}{}}
+        {\VEC{#2}}
+        {{^\FRAME{#1}}\VEC{#2}}
+}
+\newcommand{\defineV}[1]{
+    \expandafter\newcommand\csname#1V\endcsname[2][{}]{
+        \ifthenelse{\equal{##1}{}}
+            {\csname#1\endcsname{\VEC{##2}}}
+            {{^\FRAME{##1}}\csname#1\endcsname{\VEC{##2}}}
+    }
+}
+\defineV{hat}
+\defineV{tilde}
+\defineV{bar}
+\defineV{ubar}
+\defineV{dot}
+\defineV{ddot}
+\defineV{dddot}
+\defineV{ddddot}
+
+% matrix
+\newcommand{\M}[1][{}]{\def\ArgI{#1} \Mrelay}
+\newcommand\Mrelay[2][{}]{ 
+    \ifthenelse{\equal{#1}{}}
+        {
+            \ifthenelse{\equal{\ArgI}{}}
+                {\MAT{#2}}
+                {\MAT{#2}{_\FRAME{\ArgI}}}
+        }
+        {
+            \ifthenelse{\equal{\ArgI}{}}
+                {{^\FRAME{#1}}\MAT{#2}}
+                {{^\FRAME{#1}}\MAT{#2}_\FRAME{\ArgI}}
+        }
+}
+
+\newcommand{\defineM}[1]{
+    \expandafter\newcommand\csname#1Mrelay\endcsname[2][{}]{ 
+        \ifthenelse{\equal{##1}{}}
+            {
+                \ifthenelse{\equal{\ArgI}{}}
+                    {\MAT{##2}}
+                    {\MAT{##2}{_\FRAME{\ArgI}}}
+            }
+            {
+                \ifthenelse{\equal{\ArgI}{}}
+                    {{^\FRAME{##1}}\MAT{##2}}
+                    {{^\FRAME{##1}}\MAT{##2}{_\FRAME{\ArgI}}}
+            }
+    }
+    \expandafter\newcommand\csname#1M\endcsname[1][{}]{\def\ArgI{##1} \csname#1Mrelay\endcsname}
+}
+\defineM{hat}
+\defineM{tilde}
+\defineM{bar}
+\defineM{dot}
+\defineM{ddot}
+\defineM{dddot}
+\defineM{ddddot}
+
+
+% set of the real numbers
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+
+% text in math mode
+\newcommand{\MT}[1]{\mathit{#1}}
+
+
+% add \argmin command
+\newcommand{\ARGMIN}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{min}}\;}
+
+% optimization
+\newcommand{\MINIMIZE}[1]{\underset{#1}{\operatorname{minimize}}\quad}
+\newcommand{\SUBJECTTO}{{\operatorname{subject\;to}}\quad}
+
+% norm
+\newcommand{\NORM}[1]{\left\lVert#1\right\rVert}
+\newcommand{\NORME}[1]{\left\lVert#1\right\rVert^2}
+
+% cross product matrix
+\newcommand{\CROSS}[1]{#1^{\! {\times}}}
+%\newcommand{\CROSS}[1]{\overset{{\times}}{#1}}
+
+% frac, which uses smaller font to avoid overlapping of text in adjacent rows of bmatrix
+\newcommand{\FRAC}[2]{\genfrac{}{}{}{2}{#1}{#2}}
+
+% fix font in \dddot and \ddddot
+% might be necessary, if the fonts are changed
+\makeatletter
+\renewcommand{\dddot}[1]{%
+{\mathop{\kern\z@#1}\limits^{\vbox to-1.4\ex@{\kern-\tw@\ex@
+\hbox{$...$}\vss}}}}
+\renewcommand{\ddddot}[1]{%
+{\mathop{\kern\z@#1}\limits^{\vbox to-1.4\ex@{\kern-\tw@\ex@
+\hbox{$....$}\vss}}}}
+\makeatother
+
+
+% operators
+\DeclareMathOperator{\DET}{det}
+
+
+%%%%
+%% ???
+\newcommand{\diag}[2]{\underset{#1}{\operatorname{diag}}\left\{#2\right\}}
+%%%%
+
+%%%%
+%% DD's stuff
+
+\usepackage{color}
+
+%COLORS
+\definecolor{gray}{rgb}{0.9,0.9,0.9}\newcommand{\gray}[1]{{\color{gray} #1}}
+\definecolor{darkgray}{rgb}{0.6,0.6,0.6}\newcommand{\darkgray}[1]{{\color{darkgray} #1}}
+\definecolor{white}{rgb}{1.0,1.0,1.0}\newcommand{\white}[1]{{\color{white} #1}}
+\definecolor{red}{rgb}{1.0,0.0,0.0}\newcommand{\red}[1]{{\color{red} #1}}
+
+
+% gray box
+\newcommand{\gbox}[1]{
+  \begin{center}
+    \fcolorbox{black}{gray}{
+      \begin{minipage}[b]{0.98\textwidth}
+        \begin{center}
+          %\vspace{2mm}
+          \begin{minipage}{0.97\textwidth}
+            #1 
+          \end{minipage}
+          \vspace{2mm}
+        \end{center}
+      \end{minipage}
+    }
+  \end{center}
+}
+
+\newcommand{\wbox}[1]{
+  \begin{center}
+    \fcolorbox{black}{white}{
+      \begin{minipage}[b]{0.98\textwidth}
+        \begin{center}
+          %\vspace{2mm}
+          \begin{minipage}{0.97\textwidth}
+            #1
+          \end{minipage}
+          \vspace{2mm}
+        \end{center}
+      \end{minipage}
+    }
+  \end{center}
+}
+

@@ -1,0 +1,419 @@
+\ProvidesFile{mpc.tex}
+
+\documentclass[a4paper]{article}
+
+\pagestyle{empty}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{hyperref}
+
+\usepackage{float}
+
+\bibliographystyle{plain}
+\usepackage[numbers]{natbib}
+
+\usepackage{times}
+
+\usepackage{graphicx}
+\usepackage{url}
+
+\usepackage{amsmath,amssymb}
+\usepackage{cases}
+\usepackage{color}
+\usepackage{tikz}
+
+\usepackage{mymath}
+\usepackage{lipm_notation}
+
+\usetikzlibrary{snakes}
+
+\usepackage{a4wide}
+\renewcommand{\baselinestretch}{1.5}
+
+\begin{document}
+
+\section*{Model of the system}
+
+\noindent We assume the following discrete-time dynamic system:
+
+\begin{equation}
+\begin{split}
+    \cstate_{k+1} =& \M{A}_k \cstate_k + \M{B}_k \cjerk_k\\
+    \cop_{k+1} =& \M{D}_{k} \cstate_{k+1}
+\end{split}
+\end{equation}
+
+\noindent State and control variables:
+
+\begin{equation}
+    \cstate = 
+    \begin{bmatrix}
+        c^{x}\\
+        \dot{c}^{x}\\
+        \ddot{c}^{x}\\
+        c^{y}\\
+        \dot{c}^{y}\\
+        \ddot{c}^{y}\\
+        c^{\theta} \\ 
+        \dot{c}^{\theta} \\
+        \ddot{c}^{\theta} \\
+    \end{bmatrix},
+    \quad
+    \V{u} = \dddot{\V{c}} = 
+    \begin{bmatrix}
+        \dddot{c}^{x}\\
+        \dddot{c}^{y}\\
+        \dddot{c}^{\theta}\\
+    \end{bmatrix}
+\end{equation}
+
+\noindent Where $c^{\theta}$ is the yaw angle of the torso. The state transition and control matrices of the discretized system
+are:
+
+\begin{equation}
+\M{A}_k = 
+\begin{bmatrix}
+    \M{M}_k       & \M{0}         & \M{0} \\
+    \M{0}         & \M{M}_k       & \M{0} \\
+    \M{0}         & \M{0}         & \M{M}_k \\
+\end{bmatrix}
+\end{equation}
+\noindent where $\M{M}_k$ is:
+\begin{equation}
+\M{M}_k =
+\begin{bmatrix}
+    1       & T_k   & T_k^2/2\\   
+    0       & 1     & T_k    \\   
+    0       & 0     & 1      \\   
+\end{bmatrix}
+\end{equation}
+\noindent Control matrix:
+\begin{equation}
+\quad
+\M{B}_k =
+\begin{bmatrix}
+    T_k^3/6 & 0       & 0       \\
+    T_k^2/2 & 0       & 0       \\
+    T       & 0       & 0       \\
+    0       & T_k^3/6 & 0       \\
+    0       & T_k^2/2 & 0       \\
+    0       & T       & 0       \\
+    0       & 0       & T_k^3/6 \\ 
+    0       & 0       & T_k^2/2 \\
+    0       & 0       & T       
+\end{bmatrix}
+\end{equation}
+
+\noindent Output matrix:
+\begin{equation}
+\quad
+\M{D}_k =
+\begin{bmatrix}
+    1 & 0 & -\frac{c_{k}^{z}}{g} & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 1 & 0 & -\frac{c_{k}^{z}}{g} & 0 & 0 & 0\\
+\end{bmatrix}
+\end{equation}
+
+\noindent The state vector does not contain the feet orientations and their derivatives. The reason therefor is that we are interested only in the feet positions and orientations when they are static on the ground.
+
+\section*{Condensation of the system matrices}
+
+\noindent We put the system matrices in the condensed form for the whole preview horizon ($N$ intervals):
+
+\begin{equation}
+\begin{split}
+    \cState_{i+1} = \M{U}_{x} \cstate_{0} + \M{U}_{u} \cJerk_{i}\\
+    \CoP_{i+1} = \M{O}_{x} \cstate_{0} + \M{O}_{u} \cJerk_{i}
+\end{split}
+\end{equation}
+
+\noindent And corresponding matrices:
+
+\begin{equation}
+    \M{U}_{x} =
+        \begin{bmatrix}
+        \M{A}_0    \\
+        \M{A}_1 \M{A}_0  \\
+        \vdots           \\
+        \M{A}_{N-1} \dots \M{A}_0 \\
+        \end{bmatrix}
+    \quad\quad
+    \M{U}_{u} =
+        \begin{bmatrix}
+        \M{B}_0                             & \M{0}                                 & \dots & \M{0} \\
+        \M{A}_1 \M{B}_0                     & \M{B}_1                               & \dots & \M{0} \\
+        \vdots                              & \vdots                                & \ddots& \vdots \\
+        \M{A}_{N-1} \dots \M{A}_1 \M{B}_0   & \M{A}_{N-1} \dots \M{A}_2 \M{B}_1     & \dots & \M{B}_{N-1} \\
+        \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+    \M{O}_{x} =
+        \begin{bmatrix}
+        \M{D}_1 \M{A}_0    \\
+        \M{D}_2 \M{A}_1 \M{A}_0  \\
+        \vdots           \\
+        \M{D}_{N-1} \M{A}_{N-2} \dots \M{A}_0 \\
+        \end{bmatrix}
+    \quad\quad
+    \M{O}_{u} =
+        \begin{bmatrix}
+        \M{D}_1 \M{B}_0                     & \M{0}                                 & \dots & \M{0} \\
+        \M{D}_2 \M{A}_1 \M{B}_0             & \M{D}_2 \M{B}_1                       & \dots & \M{0} \\
+        \vdots                              & \vdots                                & \ddots& \vdots \\
+        \M{D}_{N-1} \M{A}_{N-2} \dots \M{A}_1 \M{B}_0   & \M{D}_{N-1} \M{A}_{N-2} \dots \M{A}_2 \M{B}_1     & \dots & \M{D}_{N-1}\M{B}_{N-2} \\
+        \end{bmatrix}
+\end{equation}
+
+\section*{Constraints}
+
+Let $\SET{I}$ be the set containing indices of sampling intervals, $\SET{I}^l_f
+\subset \SET{I}$ be the set of indices where orientations of the left foot are
+fixed within $N$ timesteps of a preview, the set $\SET{I}^r_f$ is defined equivalently for the right foot. Content of the sets $\SET{I}^l_f$ and $\SET{I}^r_f$ are defined by the finite state machine at the beginning of
+each preview and are used to build the constraints and selection matrices. For each step there is a defined velocity and duration.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Footstep positions}
+Footstep positions are expressed in the global frame - in general to impose simple bounds as constraints on the variable footstep positions we need to translate and rotate from global to local foot frame.
+In this case we assume that the constraints on the feet positions have the shape of rectangles. Furthermore, we do not consider the rotation of the constraints.\\
+
+\noindent The footstep position and orientation corresponding to $k$-th ($k = 1,\dots,N$) sampling interval is denoted as $\V{f}_k = (f^x_k, f^y_k, f^{\theta}_k)$.
+We can map the $M$ footsteps into $N$ sampling intervals of an MPC using the following formula:
+
+\begin{equation}
+\begin{split}
+    \underbrace{
+    \begin{bmatrix} 
+        \M{f}_1 \\ 
+        \vdots \\ 
+        \M{f}_N 
+    \end{bmatrix}
+    }_{\M{F}_{i+1}}
+    & = 
+    \begin{bmatrix}
+        1   &  0   &   \dots   &   0 \\
+        1   &  0   &   \dots   &   0 \\
+        0   &  1   &   \dots   &   0 \\
+        0   &  1   &   \dots   &   0 \\
+        0   &  1   &   \dots   &   0 \\
+        \vdots  &  \vdots  &   \ddots  &   \vdots \\
+        0   &  0   &   \dots   &   1 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \overline{\M{f}}_0\\
+        \vdots\\
+        \overline{\M{f}}_M \\
+    \end{bmatrix}
+    =
+    \underbrace{
+    \begin{bmatrix}
+        1   \\
+        1   \\
+        0   \\
+        0   \\
+        0   \\
+        \vdots  \\
+        0   \\
+    \end{bmatrix}}_{\M{V}_{i+1}}
+    \overline{\M{f}_0}
+    +
+    \underbrace{
+    \begin{bmatrix}
+        0   &   \dots   &   0 \\
+        0   &   \dots   &   0 \\
+        1   &   \dots   &   0 \\
+        1   &   \dots   &   0 \\
+        1   &   \dots   &   0 \\
+        \vdots  &   \ddots  &   \vdots \\
+        0   &   \dots   &   1 \\
+    \end{bmatrix}}_{\overline{\M{V}}_{i+1}}
+    \underbrace{
+    \begin{bmatrix}
+        \overline{\M{f}}_1 \\
+        \vdots\\
+        \overline{\M{f}}_M\\
+    \end{bmatrix}}_{\overline{\M{F}}_{i+1}}
+\end{split}
+\end{equation}
+
+\noindent $\overline{\M{V}}_{i+1}$ matrix has $N$ rows corresponding to $N$ time intervals and $M$ columns corresponding to $M$ footsteps in the preview horizon. Equation 11
+will be used in the objective function in order to express footsteps in terms of decision variables $\overline{\M{F}}_{i+1}$. Matrices $\overline{\M{V}}_{i+1}$, $\M{V}_{i+1}$ are built before each preview based on the states previewed by the finite state machine.
+States are previewed according to the time of the preview, sampling time of one interval of the preview and duration of each allowed state. \\
+
+\noindent The difference between two consecutive steps (position of the next step with respect to the previous one) should lie within a rectangle. We therefore constrain the position
+of the next footstep with respect to the previous footstep for all footsteps in the preview. Rotation of this constraint is not taken into account, for example, for three steps in the preview the second step's rotation is not considered when constraining the third step.
+Potentially, it can lead to problems such as self-collisions, however in practice this seems to be of lesser importance especially when violent rotations are prohibited. \\
+
+\noindent We have therefore:
+
+\begin{equation}
+\begin{bmatrix}
+    \ubar{p}^{x}_{k} \\
+    \ubar{p}^{y}_{k}     
+\end{bmatrix}
+\le
+\begin{bmatrix}
+    \overline{{f}}^{x}_{k+1} - \overline{{f}}^{x}_{k} \\
+    \overline{{f}}^{y}_{k+1} - \overline{{f}}^{y}_{k}
+\end{bmatrix}
+ \le 
+\begin{bmatrix}
+    \bar{p}^{x}_{k} \\
+    \bar{p}^{y}_{k}     
+\end{bmatrix}
+, \quad k = 0 \dots M-1
+\end{equation}
+
+\noindent Where $M$ is the number of steps in the preview.
+
+\noindent In short:
+
+\begin{equation}
+\ubarV{P} \le \M{A}_{p}\V{X} \le \barV{P}
+\end{equation}
+
+\noindent Where $\V{X}$ is the decision variables vector.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{CoP position}
+Bounds on the CoP are expressed in the global frame. Orientations $f^{\theta}_k$ of the footsteps are disregarded in this constraint. We disregard them because of the geometry of the constraint we assume to avoid
+nonlinearity. Namely, we constrain the CoP to lie within much smaller bounds which do not change with the orientations of the feet. These smaller bounds are represented conceptually as a circle and approximated by a square inscribed therein.
+Therefore, as circle is invariant to the rotation, we can drop the rotation matrix from the CoP constraints but keep the feet rotations among decision variables which will appear in the objective function.
+
+\begin{equation}
+\begin{bmatrix}
+    \underline{z}^{x}_{k} \\
+    \underline{z}^{y}_{k}     
+\end{bmatrix}
+\leq
+\begin{bmatrix}
+    z^{x}_{k} - f^{x}_{k} \\
+    z^{y}_{k} - f^{y}_{k}     
+\end{bmatrix}
+\leq
+\begin{bmatrix}
+    \overline{z}^{x}_{k} \\
+    \overline{z}^{y}_{k}     
+\end{bmatrix}
+\quad k = 1 \dots N
+\end{equation}
+
+\noindent In short:
+
+\begin{equation}
+\ubarV{Z} \le \M{A}_{z}\V{X} \le \barV{Z}
+\end{equation}
+
+\section*{Other variables}
+
+\paragraph{Decision variables}
+
+\begin{equation}
+    \quad
+    \V{X} = 
+    \begin{bmatrix} 
+        \dddot{\M{C}} \\
+        \overline{\M{F}}^{x} \\
+        \overline{\M{F}}^{y} \\
+        \overline{\M{F}}^{\theta}
+    \end{bmatrix}
+    \quad
+\end{equation}
+
+\section*{Objective function}
+
+\begin{equation}
+\begin{split}
+    \MINIMIZE{\M{X}}  & \frac{\beta}{2} \NORM{\cVel^{x} - \cVel^{x}_{ref}}^2 + \frac{\beta}{2} \NORM{\cVel^{y} - \cVel^{y}_{ref}}^2 + \\
+                        & \frac{\gamma}{2}  \NORM{\CoP^{x} - \M{F}^{x}}^2 + \frac{\gamma}{2}  \NORM{\CoP^{y} - \M{F}^{y}}^2 +\\
+                        & \frac{\alpha}{2} \NORM{\cJerk^{x}}^2 + \frac{\alpha}{2} \NORM{\cJerk^{y}}^2 + \frac{\gamma}{2} \NORM{\M{F}^{\theta} - \cPos^{\theta}}^2 +\\
+                        & \frac{\beta}{2} \NORM{\cVel^{\theta} - \cVel^{\theta}_{ref}}^2 +\\
+                        & \frac{\alpha}{2} \NORM{\cJerk^{\theta}}^2 \\
+    \SUBJECTTO          & \ubarV{P} \le \M{A}_{p}\V{X} \le \barV{P} \\
+                        & \ubarV{Z} \le \M{A}_{z}\V{X} \le \barV{Z}
+\end{split}
+\end{equation}
+
+\section*{Hierarchical least squares problem}
+\begin{description}
+    \item[Level 1:]
+        \begin{equation}
+        \begin{split}
+            & \ubarV{Z} \le \M{A}_{z}\V{X} \le \barV{Z} \\
+            & \ubarV{P} \le \M{A}_{p}\V{X} \le \barV{P}
+        \end{split}
+        \end{equation}
+
+    \item[Level 2:]
+        \begin{equation}
+        \begin{split}
+            & \sqrt{\frac{\alpha}{2}} \cJerk = 0 \\
+            & \sqrt{\frac{\beta}{2}} \M{S}_{vx} \V{U}_{u} \cJerk = \sqrt{\frac{\beta}{2}} (\cVel^{x}_{ref} - \M{S}_{vx} \V{U}_{x} \cstate_{0})\\
+            & \sqrt{\frac{\beta}{2}} \M{S}_{vy} \V{U}_{u} \cJerk = \sqrt{\frac{\beta}{2}} (\cVel^{y}_{ref} - \M{S}_{vy} \V{U}_{x} \cstate_{0})\\
+            & \sqrt{\frac{\beta}{2}} \M{S}_{vt} \V{U}_{u} \cJerk = \sqrt{\frac{\beta}{2}} (\cVel^{\theta}_{ref} - \M{S}_{vt} \V{U}_{x} \cstate_{0})\\
+            & \sqrt{\frac{\gamma}{2}} (\M{S}_{cx} \M{D} \V{U}_{u} \cJerk - \overline{\M{V}} \overline{\M{F}}^{x}) = \sqrt{\frac{\gamma}{2}} (\M{V}\overline{\M{f}}^{x}_{0} - \M{S}_{cx} \M{D} \V{U}_{x} \cstate_{0})\\
+            & \sqrt{\frac{\gamma}{2}} (\M{S}_{cy} \M{D} \V{U}_{u} \cJerk - \overline{\M{V}} \overline{\M{F}}^{y}) = \sqrt{\frac{\gamma}{2}} (\M{V}\overline{\M{f}}^{y}_{0} - \M{S}_{cy} \M{D} \V{U}_{x} \cstate_{0})\\
+            & \sqrt{\frac{\gamma}{2}} (\overline{\M{V}} \overline{\M{F}}^{\theta} - \M{S}_{t} \V{U}_{u} \cJerk) = \sqrt{\frac{\gamma}{2}} (\M{V}\overline{\M{f}}^{\theta}_{0} - \M{S}_{t} \V{U}_{x} \cstate_{0})\\
+        \end{split}
+        \end{equation}
+\end{description}
+
+\section*{Swing foot trajectory generation}
+
+Trajectory is generated using cubic polynomial of the form
+\begin{equation}
+    at^3 + bt^2 + ct + d = y_{swing},
+\end{equation}
+where $t$ is time instance; $a,b,c,d$ are coefficients; and $y_{swing}$ is position of the swing
+foot at time $t$.
+
+\noindent Derivatives of the cubic polynomial are
+\begin{equation}
+\begin{split}
+    & 3at^2 + 2bt + c = \dot{y}_{swing},\\
+    & 6at + 2b = \ddot{y}_{swing},\\
+    & 6a = \dddot{y}_{swing}.\\
+\end{split}
+\end{equation}
+
+\noindent Second derivative (acceleration) will be tracked by the whole-body controller. Hence, the second derivative equation is used to generate 
+trajectory.
+
+\noindent Knowing initial and final time and position of the motion, coefficients $a$ and $b$ can be expressed as follows
+\begin{equation}
+\begin{split}
+    & a = -\frac{2}{t^{3}_f}(y_{swing,f} - y_{swing,i})\\
+    & b = \frac{3}{t^{2}_f}(y_{swing,f} - y_{swing,i})\\
+\end{split}
+\end{equation}
+
+\noindent Accelerations to be tracked can be found then, using
+\begin{equation}
+\begin{split}
+    & -\frac{12}{t^{3}_f}(y_{swing,f} - y_{swing,i})t + \frac{6}{t^{2}_f}(y_{swing,f} - y_{swing,i}) = \ddot{y}_{swing}\\
+\end{split}
+\end{equation}
+
+\noindent for every swing phase the above polynomial is evaluated at a desired frequency between $[0, T_{support}]$. With initial and final
+positions ($y_{swing, i}$ and $y_{swing, f}$) taken from the planned footsteps. 
+During transitional double support all accelerations are set to zero. For the $z$ coordinate a fixed
+step height $h_{step}$ is used to determine the trajectory as follows
+\begin{equation}
+    y_{swing,f}^z = 
+    \left\{
+        \begin{array}{ll}
+            h_{step}    & t \le \frac{1}{2}T_{support}, \\
+            0           & t > \frac{1}{2}T_{support}\\
+        \end{array}
+    \right.
+\end{equation}
+
+\noindent Accelerations of the torso ($\ddot{c}^x$, $\ddot{c}^y$, $\ddot{c}^\theta$) are taken directly from the state vector
+(they are not interpolated using polynomials).
+
+\end{document}
+ 
