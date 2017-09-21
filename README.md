@@ -5,6 +5,11 @@ Walking pattern generator for a biped robot (HRP4) based on MPC (Model-Predictiv
 It includes rotations of the feet and torso. 
 Generates trajectories for feet and CoM which can be tracked with a whole-body controller.
 
+Dependencies
+============
+
+Needs qpOASES solver python package installed, numpy, scipy and matplotlib.
+
 Examples
 ========
 
