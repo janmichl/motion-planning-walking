@@ -1,2 +1,7 @@
 *.txt
 *.pyc
+doc/mpc.aux
+doc/mpc.log
+doc/mpc.out
+doc/mpc.pdf
+
