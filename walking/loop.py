@@ -30,6 +30,7 @@ def main():
    feet         = [foot_length, foot_width]
 
    #instantiate the linear system model
+   #model = python.system_model.SystemModelDCM(h_CoM)
    model = python.system_model.SystemModel(h_CoM)
 
    #build the time vector
@@ -43,7 +44,7 @@ def main():
    #generate the reference speeds
    vref_x     = 0.1*np.ones((ntime, 1))
    vref_y     = 0.0*np.ones((ntime, 1))
-   vref_theta = 0.06*np.ones((ntime, 1))
+   vref_theta = 0.0*np.ones((ntime, 1))
    vref       = np.hstack((vref_x, vref_y, vref_theta))
 
    #solutions placeholders

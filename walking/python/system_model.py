@@ -72,7 +72,7 @@ class SystemModelDCM(object):
 
     def B(self, T):
 
-        M_col1 = np.array([[(1.0 / (self.omega**3))*(np.sinh(self.omega*T) - T), (1.0 / (self.omega**2))*(np.cosh(self.omega*T) - 1.0), (1.0 / self.omega)*np.sinh(self.omega*T), 0, 0, 0, 0, 0, 0]]).T
+        M_col1 = np.array([[(1.0 / (self.omega**3))*(np.sinh(self.omega*T) - self.omega*T), (1.0 / (self.omega**2))*(np.cosh(self.omega*T) - 1.0), (1.0 / self.omega)*np.sinh(self.omega*T), 0, 0, 0, 0, 0, 0]]).T
         M_col2 = np.array([[0, 0, 0, (1.0 / (self.omega**3))*(np.sinh(self.omega*T) - T), (1.0 / (self.omega**2))*(np.cosh(self.omega*T) - 1.0), (1.0 / self.omega)*np.sinh(self.omega*T), 0, 0, 0]]).T
         M_col3 = np.array([[0, 0, 0, 0, 0, 0, (1.0 / (self.omega**3))*(np.sinh(self.omega*T) - T), (1.0 / (self.omega**2))*(np.cosh(self.omega*T) - 1.0), (1.0 / self.omega)*np.sinh(self.omega*T)]]).T
 
