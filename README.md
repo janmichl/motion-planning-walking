@@ -10,6 +10,11 @@ Dependencies
 
 Needs qpOASES solver python package installed, numpy, scipy and matplotlib.
 
+How to run
+==========
+
+From the root directory of the project type `./walking/loop.py`.
+
 Examples
 ========
 
